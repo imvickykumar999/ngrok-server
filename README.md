@@ -57,7 +57,7 @@
 
 - ngrok will display output similar to this:
   ```
-  ngrok by @inconshreveable                                                                                                                                               (Ctrl+C to quit)
+  ngrok by @inconshreveable
 
   Session Status                online
   Session Expires               1 hour, 59 minutes
@@ -170,7 +170,7 @@ server.serve_forever()
 Run the script as before:
 
 ```bash
-export NGROK_AUTHTOKEN=2izoWhsY9gBfjWqbF2A3nlkmcXj_3EY1nYMMyQBLNcQ8L574b
+export NGROK_AUTHTOKEN=2iz***********************74b
 python example.py
 ```
 
