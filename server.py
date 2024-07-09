@@ -1,4 +1,3 @@
-# Ensure to have required permissions in Pydroid settings for Internet access
 import socket
 import json
 import time
@@ -81,9 +80,20 @@ def handle_messages(identifier: str):
     del players[identifier]
     conn.close()
 
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.254.254.254', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
 def main():
-    hostname = socket.gethostname()
-    server_addr = socket.gethostbyname(hostname)
+    server_addr = get_ip()
 
     print("\nServer started, listening for new connections...")
     print(f'IPV4 Address = {server_addr}')
