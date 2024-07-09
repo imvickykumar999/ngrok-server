@@ -1,7 +1,4 @@
-"""
-Server script for hosting games
-"""
-
+# Ensure to have required permissions in Pydroid settings for Internet access
 import socket
 import json
 import time
@@ -20,28 +17,15 @@ s.listen(MAX_PLAYERS)
 
 players = {}
 
-
 def generate_id(player_list: dict, max_players: int):
-    """
-    Generate a unique identifier
-
-    Args:
-        player_list (dict): dictionary of existing players
-        max_players (int): maximum number of players allowed
-
-    Returns:
-        str: the unique identifier
-    """
-
     while True:
         unique_id = str(random.randint(1, max_players))
         if unique_id not in player_list:
             return unique_id
 
-
 def handle_messages(identifier: str):
     client_info = players[identifier]
-    conn: socket.socket = client_info["socket"]
+    conn = client_info["socket"]
     username = client_info["username"]
 
     while True:
@@ -75,21 +59,19 @@ def handle_messages(identifier: str):
             players[identifier]["rotation"] = msg_json["rotation"]
             players[identifier]["health"] = msg_json["health"]
 
-        # Tell other players about player moving
         for player_id in players:
             if player_id != identifier:
                 player_info = players[player_id]
-                player_conn: socket.socket = player_info["socket"]
+                player_conn = player_info["socket"]
                 try:
                     player_conn.sendall(msg_decoded.encode("utf8"))
                 except OSError:
                     pass
 
-    # Tell other players about player leaving
     for player_id in players:
         if player_id != identifier:
             player_info = players[player_id]
-            player_conn: socket.socket = player_info["socket"]
+            player_conn = player_info["socket"]
             try:
                 player_conn.send(json.dumps({"id": identifier, "object": "player", "joined": False, "left": True}).encode("utf8"))
             except OSError:
@@ -99,7 +81,6 @@ def handle_messages(identifier: str):
     del players[identifier]
     conn.close()
 
-
 def main():
     hostname = socket.gethostname()
     server_addr = socket.gethostbyname(hostname)
@@ -108,18 +89,16 @@ def main():
     print(f'IPV4 Address = {server_addr}')
 
     while True:
-        # Accept new connection and assign unique ID
         conn, addr = s.accept()
         new_id = generate_id(players, MAX_PLAYERS)
         conn.send(new_id.encode("utf8"))
         username = conn.recv(MSG_SIZE).decode("utf8")
         new_player_info = {"socket": conn, "username": username, "position": (0, 1, 0), "rotation": 0, "health": 100}
 
-        # Tell existing players about new player
         for player_id in players:
             if player_id != new_id:
                 player_info = players[player_id]
-                player_conn: socket.socket = player_info["socket"]
+                player_conn = player_info["socket"]
                 try:
                     player_conn.send(json.dumps({
                         "id": new_id,
@@ -133,7 +112,6 @@ def main():
                 except OSError:
                     pass
 
-        # Tell new player about existing players
         for player_id in players:
             if player_id != new_id:
                 player_info = players[player_id]
@@ -151,20 +129,16 @@ def main():
                 except OSError:
                     pass
 
-        # Add new player to players list, effectively allowing it to receive messages from other players
         players[new_id] = new_player_info
-
-        # Start thread to receive messages from client
         msg_thread = threading.Thread(target=handle_messages, args=(new_id,), daemon=True)
         msg_thread.start()
 
         print(f"New connection from {addr}, assigned ID: {new_id}...")
 
-
 if __name__ == "__main__":
     try:
         main()
-    except KeyboardInterrupt: # Press CTRL + PAUSE/BREAK Key to exit
+    except KeyboardInterrupt:
         pass
     except SystemExit:
         pass
