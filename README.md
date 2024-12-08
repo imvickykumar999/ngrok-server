@@ -1,184 +1,161 @@
-## Steps to Set Up ngrok with an Authtoken
 
-1. **Sign Up for an ngrok Account**:
-   - Go to [ngrok.com](https://ngrok.com/) and sign up for a free account.
+## Port Forwarded using ngrok
 
-2. **Retrieve Your Authtoken**:
-   - After signing up and verifying your account, log in to the ngrok dashboard.
-   - Go to the "Your Authtoken" section under the "Getting Started" page.
-   - Copy your authtoken.
+```bash
+python -m http.server 80
+ipconfig
+    http://192.168.0.105/
 
-3. **Install Your Authtoken**:
-   - Open a terminal on your local machine.
-   - Run the following command to install your authtoken (replace `YOUR_AUTHTOKEN` with the token you copied):
-     ```bash
-     ngrok authtoken YOUR_AUTHTOKEN
-     ```
+https://dashboard.ngrok.com/get-started/setup/windows
+    ngrok config add-authtoken 2izwMIwxxxxxxxxxxxxxxxxxxxxxPgbqGi5h
 
-4. **Start an HTTP Tunnel**:
-   - Now you can start an HTTP tunnel using the following command:
-     ```bash
-     ngrok http 8000
-     ```
+ngrok http --url=free-camel-deadly.ngrok-free.app 80
+    https://free-camel-deadly.ngrok-free.app/
+```
 
-5. **Use the Provided URL**:
-   - After running the command, ngrok will provide a forwarding URL (e.g., `http://abcd1234.ngrok.io`).
-   - Share this URL with your friends to allow them to connect to your server.
+## Steps to Use ngrok with Flask:
 
-### Detailed Instructions
+1. **Run Your Flask App**
+   First, make sure your Flask app is running. If you haven't started it, do so by running your Flask app on a specific port (e.g., `5000`):
+   
+   ```bash
+   flask run --host=0.0.0.0 --port=5000
+   ```
+   The `--host=0.0.0.0` option allows Flask to listen on all network interfaces, making it accessible from other devices on your local network and ngrok.
 
-#### 1. Sign Up for ngrok
+2. **Start ngrok to Forward to Flask**
+   In a separate terminal, use `ngrok` to expose port `5000` (or whatever port your Flask app is running on):
+   
+   ```bash
+   ngrok http 5000
+   ```
+   
+   After running this command, `ngrok` will provide you with a public URL like:
+   ```
+   http://abc123.ngrok.io
+   ```
 
-- Visit [ngrok.com](https://ngrok.com/) and click on "Sign up".
-- Complete the registration process by providing the required details and verifying your email.
-
-#### 2. Retrieve Your Authtoken
-
-- Log in to your ngrok account.
-- Navigate to the "Getting Started" section.
-- Copy the authtoken provided.
-
-#### 3. Install Your Authtoken
-
-- Open a terminal.
-- Run the command to set up your authtoken:
-  ```bash
-  ngrok authtoken YOUR_AUTHTOKEN
-  ```
-
-  Replace `YOUR_AUTHTOKEN` with the actual token you copied from the ngrok dashboard.
-
-#### 4. Start an HTTP Tunnel
-
-- With your authtoken set up, start the HTTP tunnel:
-  ```bash
-  ngrok http 8000
-  ```
-
-- ngrok will display output similar to this:
-  ```
-  ngrok by @inconshreveable
-
-  Session Status                online
-  Session Expires               1 hour, 59 minutes
-  Version                       2.3.35
-  Region                        United States (us)
-  Web Interface                 http://127.0.0.1:4040
-  Forwarding                    http://abcd1234.ngrok.io -> http://localhost:8000
-  Forwarding                    https://abcd1234.ngrok.io -> http://localhost:8000
-
-  Connections                   ttl     opn     rt1     rt5     p50     p90
-                                 0       0       0.00    0.00    0.00    0.00
-  ```
-
-- Use the `http://abcd1234.ngrok.io` URL provided by ngrok for external access.
-
-By following these steps, you can make your local server accessible over the internet without the need for a credit card. This method will allow your friends to connect to your game server globally. If you encounter any issues, please let me know, and I can help troubleshoot further.
+3. **Access Flask App via ngrok**
+   Open the provided URL (`http://abc123.ngrok.io`) in your browser. Your Flask app will be accessible globally through this public URL.
 
 ---
 
-Here's an example of how to extend the previous script to handle a simple form submission dynamically:
+### Example Flask Application
 
-### HTML File (index.html)
+If you don't have a Flask app ready yet, here’s a simple example:
 
-Update your `index.html` file to include a simple form:
+1. **Create a Flask App (app.py):**
+   ```python
+   from flask import Flask
 
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Simple Web Page</title>
-</head>
-<body>
-    <h1>Welcome to My Web Page</h1>
-    <p>This is a simple web page served using Python and ngrok.</p>
-    <form action="/submit" method="post">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name">
-        <input type="submit" value="Submit">
-    </form>
-</body>
-</html>
-```
+   app = Flask(__name__)
 
-### Modified Python Script
+   @app.route('/')
+   def hello_world():
+       return 'Hello, World!'
 
-Extend your Python script to handle form submission:
+   if __name__ == '__main__':
+       app.run(host='0.0.0.0', port=5000)
+   ```
 
-```python
-#!/usr/bin/env python
+2. **Run the Flask App:**
+   From your terminal, run:
+   ```bash
+   python app.py
+   ```
 
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import logging
-from pyngrok import ngrok
-import urllib.parse
+3. **Expose Flask App with ngrok:**
+   In another terminal:
+   ```bash
+   ngrok http 5000
+   ```
 
-class HelloHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.protocol_version = "HTTP/1.1"
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html")
-        try:
-            with open("index.html", "rb") as file:  # Open the HTML file
-                body = file.read()  # Read the HTML file content
-            self.send_header("Content-Length", len(body))
-            self.end_headers()
-            self.wfile.write(body)  # Send the HTML content
-        except Exception as e:
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(bytes(f"Error: {str(e)}", "utf-8"))
+4. **Access your Flask app via the public ngrok URL.**
 
-    def do_POST(self):
-        self.protocol_version = "HTTP/1.1"
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length)
-        data = urllib.parse.parse_qs(post_data.decode('utf-8'))
-        
-        name = data.get('name', [''])[0]
+---
 
-        response = f"Hello, {name}!"
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html")
-        self.send_header("Content-Length", len(response))
-        self.end_headers()
-        self.wfile.write(bytes(response, "utf-8"))
+## Steps to Use ngrok with Django:
 
-logging.basicConfig(level=logging.INFO)
-server = HTTPServer(("localhost", 8000), HelloHandler)
+1. **Run Your Django App**
+   First, make sure your Django app is running on a specific port (e.g., `8000`).
+   - If you haven't already started the Django development server, run it with this command:
+   
+   ```bash
+   python manage.py runserver 0.0.0.0:8000
+   ```
 
-# Open a ngrok tunnel to the HTTP server
-http_tunnel = ngrok.connect(8000)
-print("ngrok tunnel \"{}\" -> \"http://localhost:8000\"".format(http_tunnel.public_url))
+   The `0.0.0.0` part allows the server to accept connections from any network interface (not just `localhost`), which is necessary for ngrok to work.
 
-server.serve_forever()
-```
+   Your Django app should now be accessible at `http://127.0.0.1:8000/` locally.
 
-### Explanation
+---
 
-1. **Form in HTML**: The `index.html` file now includes a simple form that submits to `/submit` via POST.
-2. **Handler Modification**: The `HelloHandler` class is extended to handle POST requests.
-3. **do_POST Method**:
-   - Reads the content length and the POST data.
-   - Parses the POST data to extract form values.
-   - Generates a response based on the submitted data.
-   - Sends the response back to the client.
+2. **Start ngrok to Forward to Django**
+   In a separate terminal window, run ngrok to expose the local port `8000` (or whichever port your Django app is running on):
 
-### Running the Script
+   ```bash
+   ngrok http 8000
+   ```
 
-Run the script as before:
+   After running this command, ngrok will generate a public URL like:
+   ```
+   http://abc123.ngrok.io
+   ```
 
-```bash
-export NGROK_AUTHTOKEN=2iz***********************74b
-python example.py
-```
+   This URL will tunnel requests to your local Django application.
 
-### Accessing the Web Page and Submitting the Form
+---
 
-1. **Start the Script**: Make sure the script is running.
-2. **Open the Public URL**: Use the URL provided by ngrok (e.g., `http://abcd1234.ngrok.io`).
-3. **Submit the Form**: Enter a name in the form and submit it.
-4. **View the Response**: You should see a dynamic response that greets you with the name you entered.
+3. **Access Your Django App via ngrok**
+   You can now open the public URL (`http://abc123.ngrok.io`) in a browser to access your Django app globally.
 
-This setup demonstrates how to handle both static content and dynamic form submissions with a simple HTTP server in Python, making your web page interactive. If you need further customization or more advanced features, feel free to ask!
+---
+
+### Example Django Application (Optional)
+If you don't have a Django app yet, here's a basic setup:
+
+1. **Create a Django Project:**
+   ```bash
+   django-admin startproject myproject
+   cd myproject
+   ```
+
+2. **Create a Django App:**
+   ```bash
+   python manage.py startapp myapp
+   ```
+
+3. **Set up the URL in `myproject/urls.py`:**
+   Add the following line to route requests to your app:
+   ```python
+   from django.contrib import admin
+   from django.urls import path
+   from myapp import views
+
+   urlpatterns = [
+       path('admin/', admin.site.urls),
+       path('', views.index),
+   ]
+   ```
+
+4. **Create a simple view in `myapp/views.py`:**
+   ```python
+   from django.http import HttpResponse
+
+   def index(request):
+       return HttpResponse("Hello, World!")
+   ```
+
+5. **Run the Django Server:**
+   ```bash
+   python manage.py runserver 0.0.0.0:8000
+   ```
+
+6. **Run ngrok:**
+   In a new terminal window, run:
+   ```bash
+   ngrok http 8000
+   ```
+
+7. **Access the Django App:**
+   Visit the ngrok URL (e.g., `http://abc123.ngrok.io`) to see your Django application running.
