@@ -1,9 +1,16 @@
 import cv2
 import imagezmq
+import socket
 
-CLIENT_IP = input('Enter CLIENT IP : ')
-# Initialize the ImageSender to send frames to a specific address
-sender = imagezmq.ImageSender(connect_to=f'tcp://{CLIENT_IP}:5555')  
+# Automatically get the local device's IPv4 address
+hostname = socket.gethostname()
+local_ip = socket.gethostbyname(hostname)
+
+# Print detected IP for debugging
+print(f"Detected local IP: {local_ip}")
+
+# Use the local IPv4 address to connect to the client
+sender = imagezmq.ImageSender(connect_to=f'tcp://{local_ip}:5555')  
 
 print("Server is ready to stream...")
 
