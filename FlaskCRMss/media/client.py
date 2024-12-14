@@ -8,7 +8,7 @@ import schedule
 # Configuration
 SAVE_DIR = os.path.join(os.getcwd(), "screenshots")  # Ensure absolute path
 # UPLOAD_URL = "http://127.0.0.1:5000/upload_screenshot"
-UPLOAD_URL = "https://qgpdjem33w.loclx.io/upload_screenshot" 
+UPLOAD_URL = "https://secure-bluegill-purely.ngrok-free.app/upload_screenshot" 
 
 # Ensure the directory for saving screenshots exists
 os.makedirs(SAVE_DIR, exist_ok=True)
